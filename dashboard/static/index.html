@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Industrial Sensor ELT Pipeline | Data Engineering Control Center</title>
+    <meta name="description" content="End-to-end interactive dashboard for Industrial Sensor ELT Pipeline demonstrating Kimball Star Schema, Window Functions, Anomaly Detection, and Quality Circuit Breakers.">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- TOP HEADER & BRAND -->
+        <header class="app-header">
+            <div class="header-left">
+                <div class="logo-icon">⚡</div>
+                <div class="brand-text">
+                    <h1>Industrial Sensor ELT Pipeline</h1>
+                    <p class="subtitle">Production Data Warehouse &bull; Observability Hub &bull; Kimball Star Schema</p>
+                </div>
+            </div>
+            <div class="header-right">
+                <div class="status-badge connected" id="db-status-badge">
+                    <span class="status-pulse"></span>
+                    <span id="db-status-text">Postgres 16 Connected (Port 5433)</span>
+                </div>
+                <button class="btn btn-primary" id="btn-trigger-sync">
+                    <span class="btn-icon">⚡</span>
+                    <span>Run Sync Pipeline</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- KPI SUMMARY METRICS -->
+        <section class="kpi-grid">
+            <div class="kpi-card" id="kpi-raw">
+                <div class="kpi-header">
+                    <span class="kpi-label">Raw Layer (Bronze)</span>
+                    <span class="kpi-icon">📥</span>
+                </div>
+                <div class="kpi-value" id="kpi-raw-val">10,000</div>
+                <div class="kpi-subtext">Immutable Source Telemetry</div>
+            </div>
+            <div class="kpi-card" id="kpi-staging">
+                <div class="kpi-header">
+                    <span class="kpi-label">Staging Layer (Silver)</span>
+                    <span class="kpi-icon">⚙️</span>
+                </div>
+                <div class="kpi-value" id="kpi-staging-val">10,000</div>
+                <div class="kpi-subtext">Physics & Derived Features</div>
+            </div>
+            <div class="kpi-card" id="kpi-warehouse">
+                <div class="kpi-header">
+                    <span class="kpi-label">Warehouse (Gold Facts)</span>
+                    <span class="kpi-icon">🏛️</span>
+                </div>
+                <div class="kpi-value" id="kpi-warehouse-val">10,000</div>
+                <div class="kpi-subtext">Star Schema (Surrogate Keys)</div>
+            </div>
+            <div class="kpi-card highlight-amber" id="kpi-anomalies">
+                <div class="kpi-header">
+                    <span class="kpi-label">Torque Anomalies (>2.5σ)</span>
+                    <span class="kpi-icon">⚠️</span>
+                </div>
+                <div class="kpi-value" id="kpi-anomalies-val">--</div>
+                <div class="kpi-subtext">Window Function Z-Scores</div>
+            </div>
+            <div class="kpi-card highlight-emerald" id="kpi-quality">
+                <div class="kpi-header">
+                    <span class="kpi-label">Quality Gate Status</span>
+                    <span class="kpi-icon">🛡️</span>
+                </div>
+                <div class="kpi-value" id="kpi-quality-val">100% PASS</div>
+                <div class="kpi-subtext" id="kpi-quality-sub">8 Active Assertions</div>
+            </div>
+        </section>
+
+        <!-- INTERACTIVE PIPELINE ARCHITECTURE MAP -->
+        <section class="pipeline-flow-container">
+            <div class="section-title-row">
+                <h2>🚀 Live ELT Data Flow Architecture</h2>
+                <span class="badge-subtle">Click any stage to inspect live tables & schemas</span>
+            </div>
+            <div class="flow-stages">
+                <div class="flow-stage-node active" data-layer="raw">
+                    <div class="node-step">STAGE 1</div>
+                    <div class="node-title">📥 Bronze: Raw Telemetry</div>
+                    <div class="node-meta"><code>raw.sensor_telemetry</code></div>
+                    <div class="node-badge">Idempotent Upsert</div>
+                </div>
+                <div class="flow-arrow">➔</div>
+                <div class="flow-stage-node" data-layer="staging">
+                    <div class="node-step">STAGE 2</div>
+                    <div class="node-title">⚙️ Silver: Staging & Physics</div>
+                    <div class="node-meta"><code>staging.stg_sensor_telemetry</code></div>
+                    <div class="node-badge">Feature Engineering</div>
+                </div>
+                <div class="flow-arrow">➔</div>
+                <div class="flow-stage-node" data-layer="warehouse_fact">
+                    <div class="node-step">STAGE 3</div>
+                    <div class="node-title">🏛️ Gold: Star Schema DW</div>
+                    <div class="node-meta"><code>warehouse.fact + dim_*</code></div>
+                    <div class="node-badge">Surrogate Keys</div>
+                </div>
+                <div class="flow-arrow">➔</div>
+                <div class="flow-stage-node" data-layer="analytics">
+                    <div class="node-step">STAGE 4</div>
+                    <div class="node-title">📊 Window Analytics Views</div>
+                    <div class="node-meta"><code>analytics.v_*</code></div>
+                    <div class="node-badge">Z-Score & Rankings</div>
+                </div>
+                <div class="flow-arrow">➔</div>
+                <div class="flow-stage-node" data-layer="quality">
+                    <div class="node-step">STAGE 5</div>
+                    <div class="node-title">🛡️ Quality Circuit Breaker</div>
+                    <div class="node-meta"><code>quality.check_log</code></div>
+                    <div class="node-badge">Data SLA Gate</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- NAVIGATION TABS -->
+        <nav class="main-tabs">
+            <button class="tab-btn active" data-tab="tab-layers">
+                <span class="tab-icon">🏗️</span>
+                <span>Layer Inspector & Lineage</span>
+            </button>
+            <button class="tab-btn" data-tab="tab-analytics">
+                <span class="tab-icon">📊</span>
+                <span>Telemetry & Anomaly Explorer</span>
+            </button>
+            <button class="tab-btn" data-tab="tab-quality">
+                <span class="tab-icon">🛡️</span>
+                <span>Quality Gates & Governance</span>
+            </button>
+            <button class="tab-btn" data-tab="tab-sandbox">
+                <span class="tab-icon">⚡</span>
+                <span>Interactive SQL Sandbox</span>
+            </button>
+        </nav>
+
+        <!-- TAB CONTENT 1: LAYER INSPECTOR -->
+        <main class="tab-pane active" id="tab-layers">
+            <div class="pane-header">
+                <div class="layer-pill-group">
+                    <button class="pill-btn active" data-layer-target="raw">Raw (Bronze)</button>
+                    <button class="pill-btn" data-layer-target="staging">Staging (Silver)</button>
+                    <button class="pill-btn" data-layer-target="warehouse_fact">Fact Telemetry (Gold)</button>
+                    <button class="pill-btn" data-layer-target="warehouse_dim_equipment">Dim Equipment</button>
+                    <button class="pill-btn" data-layer-target="warehouse_dim_failure_mode">Dim Failure Mode</button>
+                    <button class="pill-btn" data-layer-target="analytics">Analytics Views</button>
+                    <button class="pill-btn" data-layer-target="quality">Quality Audit Log</button>
+                </div>
+            </div>
+
+            <!-- Architecture Philosophy Callout -->
+            <div class="callout-card" id="layer-callout">
+                <div class="callout-header">
+                    <span class="callout-badge" id="layer-title-badge">Raw Layer (Bronze)</span>
+                    <span class="callout-source" id="layer-sql-file">sql/raw/01_create_raw_schema.sql</span>
+                </div>
+                <p class="callout-desc" id="layer-desc">Exact 1:1 replica of source telemetry as ingested.</p>
+                <div class="callout-why">
+                    <strong>💡 Why this design decision in Data Engineering:</strong>
+                    <span id="layer-why">Preserves immutable source-of-truth.</span>
+                </div>
+            </div>
+
+            <!-- Table Preview & Schema Split -->
+            <div class="layer-details-grid">
+                <!-- Live Table Preview -->
+                <div class="glass-card full-width">
+                    <div class="card-header">
+                        <div class="header-title-group">
+                            <h3 id="table-preview-title">Live Sample Preview (<span id="table-name-display">raw.sensor_telemetry</span>)</h3>
+                            <span class="badge-subtle">Showing first 15 records</span>
+                        </div>
+                        <input type="text" class="search-input" id="table-search" placeholder="Search table preview...">
+                    </div>
+                    <div class="table-responsive" id="layer-table-container">
+                        <div class="loading-spinner">Loading warehouse data...</div>
+                    </div>
+                </div>
+
+                <!-- Column Definitions -->
+                <div class="glass-card full-width">
+                    <div class="card-header">
+                        <h3>Database Schema Definitions (<span id="schema-target-name">raw.sensor_telemetry</span>)</h3>
+                        <span class="badge-subtle" id="schema-col-count">10 Columns</span>
+                    </div>
+                    <div class="table-responsive" id="schema-table-container">
+                        <!-- Rendered by JS -->
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- TAB CONTENT 2: TELEMETRY & ANOMALY EXPLORER -->
+        <main class="tab-pane" id="tab-analytics">
+            <div class="analytics-grid">
+                <!-- High-Risk Equipment Leaderboard -->
+                <div class="glass-card">
+                    <div class="card-header">
+                        <div class="header-title-group">
+                            <h3>🚨 High-Risk Units Leaderboard</h3>
+                            <span class="badge-subtle">Ranked by DENSE_RANK() on Overstrain</span>
+                        </div>
+                    </div>
+                    <div class="table-responsive max-h-400" id="leaderboard-table-container">
+                        <div class="loading-spinner">Loading high risk leaderboard...</div>
+                    </div>
+                </div>
+
+                <!-- Failure Root Cause Distribution -->
+                <div class="glass-card">
+                    <div class="card-header">
+                        <div class="header-title-group">
+                            <h3>🔍 Failure Mode Root-Cause Breakdown</h3>
+                            <span class="badge-subtle">Partitioned by Machine Tier (L / M / H)</span>
+                        </div>
+                    </div>
+                    <div class="table-responsive max-h-400" id="failure-table-container">
+                        <div class="loading-spinner">Loading failure distribution...</div>
+                    </div>
+                </div>
+
+                <!-- Z-Score Anomaly Feed -->
+                <div class="glass-card full-width">
+                    <div class="card-header">
+                        <div class="header-title-group">
+                            <h3>⚠️ Torque Statistical Anomalies (|Z-Score| > 2.5)</h3>
+                            <span class="badge-subtle">Calculated via 10-Reading Sliding Window (AVG OVER, STDDEV OVER)</span>
+                        </div>
+                        <div class="filter-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="chk-anomalies-only" checked>
+                                <span>Show Anomalies Only</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="table-responsive" id="anomalies-table-container">
+                        <div class="loading-spinner">Loading anomaly features...</div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- TAB CONTENT 3: QUALITY GATES & GOVERNANCE -->
+        <main class="tab-pane" id="tab-quality">
+            <div class="quality-view-container">
+                <div class="glass-card full-width">
+                    <div class="card-header">
+                        <div class="header-title-group">
+                            <h3>🛡️ Automated Quality Suite & Circuit Breaker Rules</h3>
+                            <span class="badge-emerald" id="quality-summary-badge">8/8 Rules Passing</span>
+                        </div>
+                    </div>
+                    <div class="quality-rules-grid" id="quality-rules-container">
+                        <!-- Dynamically populated rule cards -->
+                    </div>
+                </div>
+
+                <div class="glass-card full-width">
+                    <div class="card-header">
+                        <div class="header-title-group">
+                            <h3>📋 Persistent Audit Log (<code>quality.check_log</code>)</h3>
+                            <span class="badge-subtle">Historical test execution audit trail</span>
+                        </div>
+                    </div>
+                    <div class="table-responsive" id="quality-audit-container">
+                        <div class="loading-spinner">Loading quality audit trail...</div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- TAB CONTENT 4: INTERACTIVE SQL SANDBOX -->
+        <main class="tab-pane" id="tab-sandbox">
+            <div class="sandbox-container">
+                <div class="glass-card full-width">
+                    <div class="card-header">
+                        <div class="header-title-group">
+                            <h3>⚡ Interactive Warehouse SQL Console</h3>
+                            <span class="badge-subtle">Execute read-only SQL queries directly against <code>sensor_dw</code></span>
+                        </div>
+                        <div class="preset-selector-group">
+                            <label for="preset-query-select">Preloaded Interview Queries:</label>
+                            <select id="preset-query-select" class="dropdown-input">
+                                <option value="window_anomalies">1. Window Functions: 10-Reading Rolling Torque & Anomaly Z-Scores</option>
+                                <option value="failure_ranking">2. Partition Ranking: Failure Modes by Product Tier (DENSE_RANK)</option>
+                                <option value="overstrain_leaderboard">3. Leaderboard: Top 15 Overstrain Equipment Units</option>
+                                <option value="anti_join">4. Anti-Join: Check for Unmatched Fact-to-Dimension Records</option>
+                                <option value="star_schema_join">5. Star Schema: Fact Join with Both Dimension Tables</option>
+                                <option value="quality_sla">6. Quality SLA: Pass Rate per Target Table</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="editor-area">
+                        <textarea id="sql-editor" rows="7" spellcheck="false"></textarea>
+                    </div>
+
+                    <div class="editor-actions">
+                        <div class="query-stats" id="query-stats">
+                            <span>Ready to execute.</span>
+                        </div>
+                        <button class="btn btn-primary" id="btn-run-query">
+                            <span class="btn-icon">▶</span>
+                            <span>Execute Query (Ctrl + Enter)</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Query Results Box -->
+                <div class="glass-card full-width" id="query-results-card">
+                    <div class="card-header">
+                        <div class="header-title-group">
+                            <h3>Query Execution Output</h3>
+                            <span class="badge-subtle" id="query-result-meta">0 rows returned</span>
+                        </div>
+                    </div>
+                    <div class="table-responsive" id="query-results-container">
+                        <div class="empty-state">Click "Execute Query" above to run SQL against the data warehouse.</div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- SYNC EXECUTION MODAL / DRAWER -->
+        <div class="modal-overlay" id="sync-modal">
+            <div class="modal-content glass-card">
+                <div class="modal-header">
+                    <h3>⚡ Executing End-to-End Pipeline</h3>
+                    <button class="modal-close" id="btn-close-modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="sync-progress-bar">
+                        <div class="sync-progress-fill" id="sync-progress-fill"></div>
+                    </div>
+                    <div class="sync-steps-list" id="sync-steps-list">
+                        <div class="sync-step pending" id="step-extract">
+                            <span class="step-icon">⚪</span>
+                            <div class="step-text">
+                                <strong>1. Raw Extraction & Upsert</strong>
+                                <p>Ingesting CSV into <code>raw.sensor_telemetry</code></p>
+                            </div>
+                        </div>
+                        <div class="sync-step pending" id="step-staging">
+                            <span class="step-icon">⚪</span>
+                            <div class="step-text">
+                                <strong>2. Staging Transform</strong>
+                                <p>Computing Celsius, Power (kW), Overstrain</p>
+                            </div>
+                        </div>
+                        <div class="sync-step pending" id="step-star">
+                            <span class="step-icon">⚪</span>
+                            <div class="step-text">
+                                <strong>3. Warehouse Star Schema</strong>
+                                <p>Populating <code>dim_equipment</code> and <code>fact_sensor_telemetry</code></p>
+                            </div>
+                        </div>
+                        <div class="sync-step pending" id="step-analytics">
+                            <span class="step-icon">⚪</span>
+                            <div class="step-text">
+                                <strong>4. Analytics Views</strong>
+                                <p>Refreshing Window Functions & Z-Scores</p>
+                            </div>
+                        </div>
+                        <div class="sync-step pending" id="step-quality">
+                            <span class="step-icon">⚪</span>
+                            <div class="step-text">
+                                <strong>5. Data Quality Gates</strong>
+                                <p>Running 8 assertion rules and logging SLA</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" id="btn-modal-done" disabled>Pipeline In Progress...</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- FOOTER -->
+        <footer class="app-footer">
+            <p>Industrial Sensor ELT Pipeline &bull; Production Data Engineering Project &bull; Built for Mechademy & ClanX</p>
+            <p class="footer-links">
+                <span>Database: <code>sensor_dw (PostgreSQL 16)</code></span> &bull;
+                <span>Orchestrator: <code>Airflow 2.9.3</code></span> &bull;
+                <span>Architecture: <code>Kimball Star Schema</code></span>
+            </p>
+        </footer>
+    </div>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>
