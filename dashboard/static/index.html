@@ -1,16 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Industrial Sensor ELT Pipeline | Data Engineering Control Center</title>
-    <meta name="description" content="End-to-end interactive dashboard for Industrial Sensor ELT Pipeline demonstrating Kimball Star Schema, Window Functions, Anomaly Detection, and Quality Circuit Breakers.">
+    <meta name="description"
+        content="End-to-end interactive dashboard for Industrial Sensor ELT Pipeline demonstrating Kimball Star Schema, Window Functions, Anomaly Detection, and Quality Circuit Breakers.">
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="/static/styles.css">
 </head>
+
 <body>
     <div class="app-container">
         <!-- TOP HEADER & BRAND -->
@@ -19,7 +24,8 @@
                 <div class="logo-icon">⚡</div>
                 <div class="brand-text">
                     <h1>Industrial Sensor ELT Pipeline</h1>
-                    <p class="subtitle">Production Data Warehouse &bull; Observability Hub &bull; Kimball Star Schema</p>
+                    <p class="subtitle">Production Data Warehouse &bull; Observability Hub &bull; Kimball Star Schema
+                    </p>
                 </div>
             </div>
             <div class="header-right">
@@ -175,7 +181,8 @@
                 <div class="glass-card full-width">
                     <div class="card-header">
                         <div class="header-title-group">
-                            <h3 id="table-preview-title">Live Sample Preview (<span id="table-name-display">raw.sensor_telemetry</span>)</h3>
+                            <h3 id="table-preview-title">Live Sample Preview (<span
+                                    id="table-name-display">raw.sensor_telemetry</span>)</h3>
                             <span class="badge-subtle">Showing first 15 records</span>
                         </div>
                         <input type="text" class="search-input" id="table-search" placeholder="Search table preview...">
@@ -232,7 +239,8 @@
                     <div class="card-header">
                         <div class="header-title-group">
                             <h3>⚠️ Torque Statistical Anomalies (|Z-Score| > 2.5)</h3>
-                            <span class="badge-subtle">Calculated via 10-Reading Sliding Window (AVG OVER, STDDEV OVER)</span>
+                            <span class="badge-subtle">Calculated via 10-Reading Sliding Window (AVG OVER, STDDEV
+                                OVER)</span>
                         </div>
                         <div class="filter-group">
                             <label class="checkbox-label">
@@ -284,16 +292,22 @@
                     <div class="card-header">
                         <div class="header-title-group">
                             <h3>⚡ Interactive Warehouse SQL Console</h3>
-                            <span class="badge-subtle">Execute read-only SQL queries directly against <code>sensor_dw</code></span>
+                            <span class="badge-subtle">Execute read-only SQL queries directly against
+                                <code>sensor_dw</code></span>
                         </div>
                         <div class="preset-selector-group">
                             <label for="preset-query-select">Preloaded Interview Queries:</label>
                             <select id="preset-query-select" class="dropdown-input">
-                                <option value="window_anomalies">1. Window Functions: 10-Reading Rolling Torque & Anomaly Z-Scores</option>
-                                <option value="failure_ranking">2. Partition Ranking: Failure Modes by Product Tier (DENSE_RANK)</option>
-                                <option value="overstrain_leaderboard">3. Leaderboard: Top 15 Overstrain Equipment Units</option>
-                                <option value="anti_join">4. Anti-Join: Check for Unmatched Fact-to-Dimension Records</option>
-                                <option value="star_schema_join">5. Star Schema: Fact Join with Both Dimension Tables</option>
+                                <option value="window_anomalies">1. Window Functions: 10-Reading Rolling Torque &
+                                    Anomaly Z-Scores</option>
+                                <option value="failure_ranking">2. Partition Ranking: Failure Modes by Product Tier
+                                    (DENSE_RANK)</option>
+                                <option value="overstrain_leaderboard">3. Leaderboard: Top 15 Overstrain Equipment Units
+                                </option>
+                                <option value="anti_join">4. Anti-Join: Check for Unmatched Fact-to-Dimension Records
+                                </option>
+                                <option value="star_schema_join">5. Star Schema: Fact Join with Both Dimension Tables
+                                </option>
                                 <option value="quality_sla">6. Quality SLA: Pass Rate per Target Table</option>
                             </select>
                         </div>
@@ -323,7 +337,8 @@
                         </div>
                     </div>
                     <div class="table-responsive" id="query-results-container">
-                        <div class="empty-state">Click "Execute Query" above to run SQL against the data warehouse.</div>
+                        <div class="empty-state">Click "Execute Query" above to run SQL against the data warehouse.
+                        </div>
                     </div>
                 </div>
             </div>
@@ -386,7 +401,8 @@
 
         <!-- FOOTER -->
         <footer class="app-footer">
-            <p>Industrial Sensor ELT Pipeline &bull; Production Data Engineering Project &bull; Built for Mechademy & ClanX</p>
+            <p>Industrial Sensor ELT Pipeline &bull; Production Data Engineering Project &bull; Built for Mechademy &
+                ClanX</p>
             <p class="footer-links">
                 <span>Database: <code>sensor_dw (PostgreSQL 16)</code></span> &bull;
                 <span>Orchestrator: <code>Airflow 2.9.3</code></span> &bull;
@@ -397,4 +413,5 @@
 
     <script src="/static/app.js"></script>
 </body>
+
 </html>

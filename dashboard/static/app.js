@@ -101,7 +101,7 @@ document.addEventListener("DOMContentLoaded", () => {
     initLayerPills();
     initSQLSandbox();
     initSyncPipeline();
-    
+
     // Load initial data
     fetchPipelineSummary();
     fetchLayerDetails("raw");
@@ -119,10 +119,10 @@ function initTabs() {
     tabButtons.forEach(btn => {
         btn.addEventListener("click", () => {
             const targetId = btn.dataset.tab;
-            
+
             tabButtons.forEach(b => b.classList.remove("active"));
             tabPanes.forEach(p => p.classList.remove("active"));
-            
+
             btn.classList.add("active");
             const targetPane = document.getElementById(targetId);
             if (targetPane) targetPane.classList.add("active");
@@ -143,12 +143,12 @@ function initFlowNodes() {
         node.addEventListener("click", () => {
             nodes.forEach(n => n.classList.remove("active"));
             node.classList.add("active");
-            
+
             const layerKey = node.dataset.layer;
-            
+
             // Switch to Layer Inspector Tab
             document.querySelector('.tab-btn[data-tab="tab-layers"]').click();
-            
+
             // Set active pill
             const pill = document.querySelector(`.pill-btn[data-layer-target="${layerKey}"]`);
             if (pill) pill.click();
@@ -165,7 +165,7 @@ function initLayerPills() {
         pill.addEventListener("click", () => {
             pills.forEach(p => p.classList.remove("active"));
             pill.classList.add("active");
-            
+
             const layerKey = pill.dataset.layerTarget;
             fetchLayerDetails(layerKey);
 
@@ -202,7 +202,7 @@ async function fetchPipelineSummary() {
         document.getElementById("kpi-staging-val").textContent = (data.counts.staging || 0).toLocaleString();
         document.getElementById("kpi-warehouse-val").textContent = `${(data.counts.fact || 0).toLocaleString()} / ${(data.counts.dim_equipment || 0).toLocaleString()} dims`;
         document.getElementById("kpi-anomalies-val").textContent = (data.counts.anomalies || 0).toLocaleString();
-        
+
         const qStats = data.quality.latest_run;
         if (qStats && qStats.total > 0) {
             const passRate = Math.round((qStats.passed / qStats.total) * 100);
@@ -230,7 +230,7 @@ async function fetchLayerDetails(layerKey) {
         document.getElementById("layer-sql-file").textContent = data.sql_file;
         document.getElementById("layer-desc").textContent = data.description;
         document.getElementById("layer-why").textContent = data.why;
-        
+
         document.getElementById("table-name-display").textContent = data.table;
         document.getElementById("schema-target-name").textContent = data.table;
         document.getElementById("schema-col-count").textContent = `${data.schema_columns.length} Columns`;
@@ -461,7 +461,7 @@ function initSyncPipeline() {
             });
             btnDone.textContent = `Execution Failed: ${err.message} (Click to Close)`;
         }
- finally {
+        finally {
             btnDone.disabled = false;
             fetchPipelineSummary();
             fetchLayerDetails("raw");

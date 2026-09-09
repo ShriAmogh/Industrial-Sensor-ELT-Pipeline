@@ -1,4 +1,4 @@
-# 🏭 Industrial Sensor ELT Pipeline & Predictive Maintenance Analytics
+# Industrial Sensor ELT Pipeline & Predictive Maintenance Analytics
 
 [![Python](https://img.shields.io/badge/Python-3.11-blue.svg)](https://www.python.org/)
 [![Apache Airflow](https://img.shields.io/badge/Apache_Airflow-2.9.3-017CEE.svg)](https://airflow.apache.org/)
@@ -7,11 +7,11 @@
 
 An end-to-end, production-grade **ELT (Extract, Load, Transform)** data pipeline designed for industrial equipment telemetry, predictive maintenance modeling, and statistical anomaly detection.
 
-Orchestrated using **Apache Airflow**, containerized with **Docker**, modeled in **PostgreSQL (Star Schema)**, and protected by **Automated Data Quality Gates**.
+Orchestrated using **Apache Airflow**, containerized with **Docker**, modeled in **PostgreSQL (Kimball Star Schema)**, and protected by **Automated Data Quality Gates**.
 
 ---
 
-## 🏗️ Architecture & Data Flow
+## Architecture & Data Flow
 
 ```
                                 [ INDUSTRIAL SENSOR ELT ARCHITECTURE ]
@@ -57,7 +57,7 @@ Orchestrated using **Apache Airflow**, containerized with **Docker**, modeled in
 
 ---
 
-## 🌟 Key Highlights & Engineering Design
+## Key Highlights & Engineering Design
 
 1. **True ELT Philosophy**: Raw data is landed directly with lineage metadata (`batch_id`, `source_dataset`, `ingested_at`). All heavy transformations, physical feature calculations, and dimensional models are computed in PostgreSQL.
 2. **Dual-Database Isolation**: Airflow's internal transactional metadata DB is strictly isolated from the analytical Data Warehouse DB, mirroring production best practices.
@@ -72,7 +72,7 @@ Orchestrated using **Apache Airflow**, containerized with **Docker**, modeled in
 
 ---
 
-## 📁 Repository Structure
+## Repository Structure
 
 ```
 elt_pipeline/
@@ -112,12 +112,12 @@ elt_pipeline/
 │   └── run_dashboard.py              # Single-command dashboard launcher
 ├── docker-compose.yml                # Airflow + PostgreSQL infrastructure
 ├── requirements.txt                  # Python dependencies
-└── .env                              # Environment configuration
+└── .env.example                      # Environment configuration template
 ```
 
 ---
 
-## 🖥️ Interactive Observability Dashboard UI
+## Interactive Observability Dashboard UI
 
 A full interactive web dashboard is included to inspect all data warehouse layers, anomalies, quality checks, and execute live queries.
 
@@ -127,25 +127,26 @@ python3 scripts/run_dashboard.py
 ```
 
 Open **[http://localhost:8000](http://localhost:8000)** in your browser to access:
-- **🚀 Live ELT Data Flow Architecture**: Interactive pipeline diagram (**Raw ➔ Staging ➔ Warehouse ➔ Analytics & Quality**) with schema definitions and live sample data.
-- **📊 Telemetry & Anomaly Explorer**: High-risk equipment leaderboard, failure root-cause distribution, and Z-score anomaly detector ($|Z| > 2.5\sigma$).
-- **🛡️ Quality Gates & Governance**: Live monitoring of all 8 data quality assertions and persistent SLA audit logs (`quality.check_log`).
-- **⚡ Interactive SQL Sandbox**: Preloaded interview queries (Rolling Averages, Dense Ranking, Anti-joins, Star Schema joins) with real-time query execution benchmarking.
-- **⚡ One-Click Pipeline Execution**: Trigger full end-to-end ELT pipeline runs with live progress animation.
+- **Live ELT Data Flow Architecture**: Interactive pipeline diagram (**Raw -> Staging -> Warehouse -> Analytics & Quality**) with schema definitions and live sample data.
+- **Telemetry & Anomaly Explorer**: High-risk equipment leaderboard, failure root-cause distribution, and Z-score anomaly detector ($|Z| > 2.5\sigma$).
+- **Quality Gates & Governance**: Live monitoring of all 8 data quality assertions and persistent SLA audit logs (`quality.check_log`).
+- **Interactive SQL Sandbox**: Preloaded interview queries (Rolling Averages, Dense Ranking, Anti-joins, Star Schema joins) with real-time query execution benchmarking.
+- **One-Click Pipeline Execution**: Trigger full end-to-end ELT pipeline runs with live progress tracking.
 
 ---
 
-## 🚀 Quickstart Guide
+## Quickstart Guide
 
 ### 1. Clone & Set Up Environment
 ```bash
-git clone <your-repo-url>
-cd elt_pipeline
+git clone https://github.com/ShriAmogh/Industrial-Sensor-ELT-Pipeline.git
+cd Industrial-Sensor-ELT-Pipeline
 
 # Create Python virtual environment
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
+cp .env.example .env
 ```
 
 ### 2. Start Docker Infrastructure
@@ -175,16 +176,14 @@ python3 pipelines/quality/validators.py
 python3 scripts/run_dashboard.py
 ```
 
-
 ### 4. Trigger Orchestrated DAG in Airflow (Optional)
 ```bash
 docker exec airflow_webserver airflow dags trigger industrial_sensor_elt_pipeline
 ```
 
-
 ---
 
-## 📊 Sample SQL Analytics Queries
+## Sample SQL Analytics Queries
 
 ### 1. Statistical Anomaly Detection (Z-Score > 2.5)
 ```sql
@@ -249,12 +248,12 @@ ORDER BY speed_quintile;
 
 ---
 
-## 🛡️ Data Quality Framework & SLA Health
+## Data Quality Framework & SLA Health
 
 The validation suite in `pipelines/quality/validators.py` executes before analytical reporting is refreshed:
 
 ```
-╒═════════════════════════════╤═══════════════════════╤═════════════════════════════════╤══════════════════════╤══════════╤═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╕
+╒═════════════════════════════╤═══════════════════════╤═════════════════════════════════╤══════════════════════╤══════════╤═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╕
 │ Check Name                  │ Category              │ Table                           │ Column               │ Status   │ Details                                                                                                                     │
 ╞═════════════════════════════╪═══════════════════════╪═════════════════════════════════╪══════════════════════╪══════════╪═════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╡
 │ check_row_count             │ Volume                │ raw.sensor_telemetry            │ -                    │ PASSED   │ Found 10,000 rows (expected >= 10,000)                                                                                      │
@@ -268,8 +267,8 @@ The validation suite in `pipelines/quality/validators.py` executes before analyt
 
 ---
 
-## 👨‍💻 Author
+## Author
 
 **Amogh Arora**  
-* GitHub: [github.com/amogharora](https://github.com/amogharora)
+* GitHub: [github.com/ShriAmogh](https://github.com/ShriAmogh)
 * Focus: Production Data Engineering, Machine Learning Pipelines & Distributed Systems
