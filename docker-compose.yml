@@ -1,0 +1,137 @@
+services:
+  # -------------------------------------------------------------------------
+  # 1. Target Data Warehouse (PostgreSQL) - Where our Sensor Data Lives
+  # -------------------------------------------------------------------------
+  pipeline-db:
+    image: postgres:16-alpine
+    container_name: sensor_dw_postgres
+    environment:
+      POSTGRES_DB: ${DW_POSTGRES_DB:-sensor_dw}
+      POSTGRES_USER: ${DW_POSTGRES_USER:-dw_admin}
+      POSTGRES_PASSWORD: ${DW_POSTGRES_PASSWORD:-dw_password123}
+    ports:
+      - "${DW_HOST_PORT:-5433}:5432"
+    volumes:
+      - pipeline_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DW_POSTGRES_USER:-dw_admin} -d ${DW_POSTGRES_DB:-sensor_dw}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - elt_network
+
+  # -------------------------------------------------------------------------
+  # 2. Airflow Internal Metadata Database (PostgreSQL)
+  # -------------------------------------------------------------------------
+  airflow-postgres:
+    image: postgres:16-alpine
+    container_name: airflow_metadata_postgres
+    environment:
+      POSTGRES_DB: ${AIRFLOW_DB_NAME:-airflow}
+      POSTGRES_USER: ${AIRFLOW_DB_USER:-airflow}
+      POSTGRES_PASSWORD: ${AIRFLOW_DB_PASSWORD:-airflow}
+    volumes:
+      - airflow_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${AIRFLOW_DB_USER:-airflow} -d ${AIRFLOW_DB_NAME:-airflow}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - elt_network
+
+  # -------------------------------------------------------------------------
+  # 3. Airflow Initialization (Runs migrations & creates admin user)
+  # -------------------------------------------------------------------------
+  airflow-init:
+    image: apache/airflow:2.9.3-python3.11
+    container_name: airflow_init
+    command: version
+    depends_on:
+      airflow-postgres:
+        condition: service_healthy
+      pipeline-db:
+        condition: service_healthy
+    environment:
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://${AIRFLOW_DB_USER:-airflow}:${AIRFLOW_DB_PASSWORD:-airflow}@airflow-postgres:5432/${AIRFLOW_DB_NAME:-airflow}
+      AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
+      _AIRFLOW_WWW_USER_USERNAME: ${_AIRFLOW_WWW_USER_USERNAME:-admin}
+      _AIRFLOW_WWW_USER_PASSWORD: ${_AIRFLOW_WWW_USER_PASSWORD:-admin}
+      _AIRFLOW_DB_MIGRATE: 'true'
+      _AIRFLOW_WWW_USER_CREATE: 'true'
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - ./pipelines:/opt/airflow/pipelines
+      - ./sql:/opt/airflow/sql
+      - ./data:/opt/airflow/data
+      - ./logs:/opt/airflow/logs
+    networks:
+      - elt_network
+
+  # -------------------------------------------------------------------------
+  # 4. Airflow Webserver (UI at http://localhost:8080)
+  # -------------------------------------------------------------------------
+  airflow-webserver:
+    image: apache/airflow:2.9.3-python3.11
+    container_name: airflow_webserver
+    command: webserver
+    depends_on:
+      airflow-init:
+        condition: service_completed_successfully
+      airflow-postgres:
+        condition: service_healthy
+    environment:
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://${AIRFLOW_DB_USER:-airflow}:${AIRFLOW_DB_PASSWORD:-airflow}@airflow-postgres:5432/${AIRFLOW_DB_NAME:-airflow}
+      AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
+      PYTHONPATH: /opt/airflow
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - ./pipelines:/opt/airflow/pipelines
+      - ./sql:/opt/airflow/sql
+      - ./data:/opt/airflow/data
+      - ./logs:/opt/airflow/logs
+    restart: unless-stopped
+    networks:
+      - elt_network
+
+  # -------------------------------------------------------------------------
+  # 5. Airflow Scheduler (Executes tasks and manages DAG runs)
+  # -------------------------------------------------------------------------
+  airflow-scheduler:
+    image: apache/airflow:2.9.3-python3.11
+    container_name: airflow_scheduler
+    command: scheduler
+    depends_on:
+      airflow-init:
+        condition: service_completed_successfully
+      airflow-postgres:
+        condition: service_healthy
+    environment:
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://${AIRFLOW_DB_USER:-airflow}:${AIRFLOW_DB_PASSWORD:-airflow}@airflow-postgres:5432/${AIRFLOW_DB_NAME:-airflow}
+      AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
+      PYTHONPATH: /opt/airflow
+    volumes:
+      - ./dags:/opt/airflow/dags
+      - ./pipelines:/opt/airflow/pipelines
+      - ./sql:/opt/airflow/sql
+      - ./data:/opt/airflow/data
+      - ./logs:/opt/airflow/logs
+    restart: unless-stopped
+    networks:
+      - elt_network
+
+volumes:
+  pipeline_postgres_data:
+  airflow_postgres_data:
+
+networks:
+  elt_network:
+    driver: bridge

@@ -1,0 +1,39 @@
+# Python & Virtual Environment
+.venv/
+venv/
+env/
+ENV/
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyc
+
+# Environment & Secrets (Never commit actual passwords)
+.env
+.env.local
+.env.*.local
+
+# OS & Editor Artifacts
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Airflow Runtime Logs & Metadata
+logs/
+airflow.cfg
+unittests.cfg
+airflow.db
+
+# Jupyter & Testing
+.ipynb_checkpoints/
+.pytest_cache/
+.coverage
+htmlcov/
